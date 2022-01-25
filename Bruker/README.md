@@ -3,7 +3,8 @@
 | Pulse Sequence                                     | Description                                | Topspin |Reference      |
 |----------------------------------------------------|--------------------------------------------|---------|---------------|
 | [sr_noesy-hsqc.cd](sr_noesy-hsqc.cd)               | Super-Resolution NOESY-HSQC 3D             | 3.1+    | [1](#ref1)    |
-| [hsqcetfpf3gpsi2_slf.jll](hsqcetfpf3gpsi2_slf.jll) | Hybrid NMR SLF-HSQC                        | 3.1+    | [2](#ref2)    |
+| [hsqcetfpf3gpsi2_slf.jll](hsqcetfpf3gpsi2_slf.jll) | Hybrid NMR SLF-HSQC 3D                     | 3.1+    | [2](#ref2)    |
+| [hnco_slf.jll](hnco_slf.jll)                       | Hybrid NMR SLF-HNCO 3D/4D                  | 3.1+    | [2]($ref2)    |
 
 ## Installation
 

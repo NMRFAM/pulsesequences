@@ -8,7 +8,7 @@
 
 ## Installation
 
-On your spectrometer computer, change to the directory container your user pulse sequences. For example,
+On your spectrometer computer, change to the directory containing your user pulse sequences. For example,
 on Topspin 3.2 this directory might be:
 
 ```shell

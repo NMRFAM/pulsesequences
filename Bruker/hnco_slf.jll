@@ -1,0 +1,272 @@
+;hnco_slf.jll
+; SLF-HNCO 3D/4D
+; SLF-HSQC 3D/4D
+; INEPT incrementation in t1 followed by N/C detection in
+; t2, N/C detection in t3 and H detection in t4
+;Thiagarajan-Rosenkranz P, Draney AW, Lorieau JL. J. Am. Chem. Soc.
+;   139(13): 4715-4723.
+
+#include<Avance.incl>
+#include<Sysconf.incl>
+#include<Grad.incl>
+
+
+;written by JLorieau 20080515
+; Adapted for Avance III console
+; f1 : H
+; f2 : C
+; f3 : N
+; f5 : D
+
+
+; HNCO pulse with watergate readout.
+; no CA decoupling in C' evolution 
+; no H decoupling in N evolution 
+;Constant Time in 15N
+
+
+;C1=Ca=f4(56ppm)   C1=C'=f4(176ppm)   N=f2 (119ppm)  H=f1   D=f3
+
+
+;p7 = 90 deg (50us) 15N pulse @pl7
+
+
+;CA and C' PULSES on f4 and f5
+;p9 = selective 180 deg (23.7*2us @ 600MHz) 13CA and C'pulse: @pl6 (C1) and @pl14 (C2) 
+;p5 = selective 90 deg (53us @ 600 MHz) C' pulse @ pl15
+;p30 = pw for C' aq dec (140u) @ pl30
+;CPDPRG5 = garp.30  (aq C' dec program)
+
+#define N_LOOP
+#define C_LOOP
+
+
+;N  SW = 1/(2*in0)
+;in10=in0
+;states-tppi in N15
+
+;l4 = C' loop
+;C SW = 1/(2*in20)
+;states-tppi in C'
+
+
+;Gradient Pulses
+;p20 = 1.5m 
+;p21 = 1.9m 
+;p22 = 1.0m
+;p24 = 750u
+;p26 = 500u
+;
+;
+;gpz2 = -31%  sine.50 
+;gpz3 = -45%  grd_sh1.r   <= chirp type pulse provided by bruker post xwinnmr install
+;gpz4 = +30%  rectangular.1    Decoding gradient
+;gpz5 = -30%  rectangular.1    half-Encoding gradient
+;gpz6 = +30%  rectangular.1    half-Encoding gradient
+;gpz19 = -40% sine.50 
+;gpz20 = -25% grd_sh1.r
+;gpz21 = -15% grd_sh1.r
+;gpz22 = -20% sine.50 
+;gpz26 = -15% sine.50
+
+"d6=12.5m"
+"d10=3u"
+"d14=3u"
+"d0=d6+d10+p9*4+p9*2+d14*2+3u"
+"d11=50m"
+"d12=200u"
+"d13=p7-p1"
+"d18=12.5m-3u-p27"
+"d20=in20/2-p7-p5*0.635"
+
+"d26=in26*2"
+"d21=d26-p21-203u"
+"d23=d26-p24-p2-p7-105u"
+"d22=d23-p5"
+
+"in14=in0"
+"in10=in0"
+
+1       ze
+        1m 
+        1m 
+2       d11 do:f3
+        d12
+3       d12*6
+4       d12*3
+5       d12*3
+6       10u
+        1m BLKGRAD
+        10u 
+        1m
+        1m do:f2
+        1m do:f3
+        d1 
+"d21=d26-p21-203u"
+"d23=d26-p24-p2-p7-105u"
+"d22=d23-p5"
+        1m UNBLKGRAD
+        10u pl1:f1
+        10u pl7:f3
+        (p7 ph0):f3
+        3u
+        p20:gp20
+        200u 
+
+;------- start 90-degree on hn -----------------------
+        (p1 ph0):f1
+        3u
+        p21:gp21
+        d21
+        200u
+        (center (p1*2 ph0):f1 (p7*2 ph0):f3)
+        d21
+        p21:gp21
+        203u
+        (p1 ph12):f1                ;INEPT to 15N
+        3u pl2:f1
+        (p2 ph0:r):f1
+        3u
+;goto 1000
+        p20:gp20
+        200u 
+;---------start INEPT to C' --------------------------------
+        (p7 ph0):f3
+        3u
+        p27:gp27
+        d18 pl16:f2
+        (center (p7*2 ph0):f3 (p9*2 ph0):f2)
+        3u
+        p27:gp27
+        d18 pl7:f3
+        (p7 ph1):f3
+        5u
+        p22:gp22
+        100u pl25:f2
+        100u pl1:f1
+;----------- start C' evolution ---------------------------
+        (p5 ph5):f2 
+        d20
+        ; N decoupling pulse
+       2u pl2:f2
+ 	     3u
+       (center (p9*2:sp10 ph0):f2 (p7*2 ph0):f3)
+       3u
+       2u pl15:f2
+        d20
+       (p5 ph0):f2
+        10u
+        p26:gp26
+        100u pl16:f2
+        100u
+         5u pl1:f1
+        (p1*2 ph0):f1 
+       10u
+;-------------start N evolution ----------------------------       
+       (p7 ph7):f3
+        gron10
+        d0*0.5
+        groff
+        gron11
+        d0*0.5
+        groff
+        (center (p7*2 ph0):f3 (p9*2 ph0):f2)
+        gron10
+        d6*0.5
+        groff
+        gron11
+        d6*0.5 pl2:f2
+        groff
+        (center (p1*2 ph0):f1 (p9*2:sp10 ph0):f2)
+        d10 pl16:f2
+        d14
+        (p9*2 ph0):f2
+        3u
+        (p9*2:sp10 ph0):f2
+        d14
+        (p7 ph0):f3
+        3u
+        p23:gp6 
+        200u
+;-------------transfer back to H ---------------------------
+        (p15:sp15 ph2:r):f1
+         5u pl1:f1
+        (p1 ph0):f1
+;goto 1000
+        100u
+        p24:gp2
+        d23 pl2:f1
+        (p2 ph11:r):f1
+        3u
+        2u pl1:f1
+        (center (p1*2 ph2):f1 (p7*2 ph0):f3)
+        5u pl2:f1
+        (p2 ph11:r):f1
+        2u 
+        3u pl15:f2
+        (p5 ph0):f2
+        90u
+        p24:gp2 ; Decoding pulse
+        d22
+1000    5u pl31:f3
+        go=2 ph31 cpd2:f3
+        10u do:f3
+        1m BLKGRAD
+        d11 wr #0 if #0 zd
+
+       d12 id26
+       lo to 3 times l5   
+		  d12 rd26
+
+
+#ifdef N_LOOP
+        d12 ip7
+        lo to 3 times 2
+        if "d0 < in0+1u" 
+        {
+         d12*2 id14
+        }
+        else
+        {
+        d12 id10
+        d12 dd0
+;        "d0 = d0 - in0"
+        }
+        d12 ip31*2
+        lo to 4 times l3
+#else
+      d12*4
+#endif
+
+d12 rd0
+d12 rd10
+d12 rd14
+
+#ifdef C_LOOP
+        d12  ip5
+        lo to 5 times 2
+        d12 id20
+        d12 ip31*2
+        d12
+        lo to 6 times l4
+#endif
+
+
+1m 
+1m do:f2
+1m do:f3
+1m BLKGRAD
+1m 
+1m
+exit    
+        
+ph0=0
+ph1=1          ;original setting = 1     ;check right phase for Boltzmann !!!!!
+ph2=2
+ph3=3
+ph5=0 2
+ph7=1 1 3 3
+ph10=2
+ph11=2
+ph12=3
+ph31=0 2 2 0
